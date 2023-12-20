@@ -1,73 +1,64 @@
 pipeline {
-  environment {
-    registry = "readydocker1/traffic-api"
-    registryCredential = 'dockerhub'
-    container='traffic-api'
-  }
-  agent any
-  tools {nodejs "node"}
-  stages {
-    stage('Cloning Repo') {
-            steps {
-              script {
-                  git branch: 'main',
-                  url: 'https://github.com/bzzlab/M324_trafficlight-api.git'
+    environment {
+      //registry
+      registry = "readydocker1/traffic-api"//??
+      //registryCredential
+      registryCredential = 'dockerhub'//??
+      //container variable
+      container='traffic-api'//??
+    }
+    agent any
+    tools {nodejs "node"}
+    stages {
+      stage('Cloning Repo') {
+              steps {
+                script {
+                    git branch: 'main', //??
+                    url: 'https://github.com/bzzlab/M324_trafficlight-api.git' //??
+             }
            }
-         }
-    }
-    stage('Building image') {
-      steps{
-        script {
-          docker.build registry+":$BUILD_NUMBER"
-          sh 'echo $registry:$BUILD_NUMBER'
+      }
+      stage('Building image') {
+        steps{
+          script {
+            docker.build registry+":$BUILD_NUMBER"//??
+          }
         }
       }
-    }
 
-    stage('Install jest-cli') {
+      stage('Install jest-cli') {
         steps {
-            script {
-                sh """
-                    PACKAGE=\$(npm ls -g -p |grep jest-cli)
-                    if [ -z \${PACKAGE} ]
-                    then
-                      echo "Installing jest-cli ..."
-                      npm install jest-cli -g
-                    else
-                      echo "jest-cli is already installed!"
-                    fi
-                """
-            }
+          sh 'npm install jest-cli -g'
+       }
+      }
+
+      stage('Install dependencies') {
+        steps {
+          sh 'npm install'
         }
-    }
+      }
 
-    stage('Install dependencies') {
-      steps {
-        sh 'npm install'
+      stage('Run container for testing') {
+        steps {
+          sh 'docker run -itd --rm -p 3000:3000 --name $container $registry:$BUILD_NUMBER'//??
+        }
       }
-    }
+      stage('Test') {
+        steps {
+           sh 'npm test'
+        }
+      }
 
-    stage('Run container for testing') {
-      steps {
-        sh 'docker run -itd --rm -p 3000:3000 --name $container $registry:$BUILD_NUMBER'
+      stage('Remove traffic container') {
+        steps{
+          sh "docker stop $container"//??
+        }
       }
-    }
-    stage('Test') {
-      steps {
-         sh 'npm test'
-      }
-    }
 
-    stage('Remove traffic container') {
-      steps{
-        sh "docker stop $container"
+      stage('Remove Unused docker image') {
+        steps{
+          sh "docker rmi $registry:$BUILD_NUMBER"//??
+        }
       }
     }
-
-    stage('Remove Unused docker image') {
-      steps{
-        sh "docker rmi $registry:$BUILD_NUMBER"
-      }
-    }
-  }
 }
