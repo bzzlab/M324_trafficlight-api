@@ -26,22 +26,22 @@ pipeline {
         }
       }
 
-    stage('Install jest-cli') {
+      stage('Test NodeJS Installation') {
         steps {
-            script {
-                sh """
-                    PACKAGE=\$(npm ls -g -p |grep jest-cli) //??
-                    if [ -z \${PACKAGE} ]//??
-                    then//??
-                      echo "Installing jest-cli ..."//??
-                      npm install jest-cli -g//??
-                    else//??
-                      echo "jest-cli is already installed!"//??
-                    fi//??
-                """
-            }
+            sh 'npm --version; node --version'
         }
-    }
+      }
+
+      stage('Install jest-cli') {
+          steps {
+              script {
+                  sh """
+                      echo "Installing jest-cli ..."
+                      npm install jest-cli -g
+                  """
+              }
+          }
+      }
 
       stage('Install dependencies') {
         steps {
