@@ -1,0 +1,21 @@
+pipeline {
+  agent any
+  tools {nodejs "node"}
+  stages {
+      stage('Test NodeJS Installation') {
+        steps {
+            sh 'npm --version; node --version'
+        }
+      }
+      stage('Install jest-cli') {
+          steps {
+              script {
+                  sh """
+                      echo "Installing jest-cli ..."
+                      npm install jest-cli -g
+                  """
+              }
+          }
+      }
+  }
+}
